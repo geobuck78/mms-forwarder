@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd.exe /c \"where java 2>&1\")",
+      "Bash(cmd.exe /c \"dir \"\"C:\\\\Users\\\\geobu\\\\AppData\\\\Local\\\\Android\"\" 2>&1\")",
+      "Bash(cmd.exe /c \"dir \"\"C:\\\\Program Files\\\\Android Studio\"\" 2>&1\")",
+      "Bash(cmd.exe /c \"curl -L -o \"\"D:\\\\MMS\\\\gradle\\\\wrapper\\\\gradle-wrapper.jar\"\" \"\"https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar\"\" 2>&1\")",
+      "Bash(cmd.exe /c \"dir D:\\\\MMS\\\\gradle\\\\wrapper\\\\\")",
+      "Bash(powershell -Command \"Invoke-WebRequest -Uri ''https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar'' -OutFile ''D:\\\\MMS\\\\gradle\\\\wrapper\\\\gradle-wrapper.jar''\")"
+    ]
+  }
+}

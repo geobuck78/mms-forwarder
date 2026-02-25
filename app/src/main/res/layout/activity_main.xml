@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 헤더 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MMS → n8n 전달기"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="초기화 중..."
+            android:textSize="13sp"
+            android:paddingBottom="16dp"
+            android:textColor="#666666" />
+
+        <!-- 권한 상태 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="권한 상태"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvPermissionStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="확인 중..."
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 웹훅 설정 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="n8n 웹훅 설정"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingBottom="12dp"
+                    android:textColor="#333333" />
+
+                <!-- 웹훅 URL -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="웹훅 URL"
+                    android:textSize="13sp"
+                    android:textColor="#555555"
+                    android:paddingBottom="4dp" />
+
+                <EditText
+                    android:id="@+id/etWebhookUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="https://your-n8n.com/webhook/xxx"
+                    android:inputType="textUri"
+                    android:singleLine="true"
+                    android:padding="10dp"
+                    android:background="@android:drawable/edit_text"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 시크릿 키 -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="시크릿 키 (선택사항)"
+                    android:textSize="13sp"
+                    android:textColor="#555555"
+                    android:paddingBottom="4dp" />
+
+                <EditText
+                    android:id="@+id/etWebhookSecret"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="X-Webhook-Secret 헤더 값"
+                    android:inputType="textPassword"
+                    android:singleLine="true"
+                    android:padding="10dp"
+                    android:background="@android:drawable/edit_text"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 이미지 전송 스위치 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="이미지 포함 전송 (Base64)"
+                        android:textSize="14sp" />
+
+                    <Switch
+                        android:id="@+id/switchSendImages"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+                </LinearLayout>
+
+                <!-- 버튼들 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnSaveSettings"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="저장"
+                        android:backgroundTint="#1565C0" />
+
+                    <Button
+                        android:id="@+id/btnTestWebhook"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="연결 테스트"
+                        android:backgroundTint="#388E3C" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 서비스 제어 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="서비스 제어"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingBottom="12dp"
+                    android:textColor="#333333" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnStartService"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="서비스 시작"
+                        android:backgroundTint="#388E3C" />
+
+                    <Button
+                        android:id="@+id/btnStopService"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="서비스 중지"
+                        android:backgroundTint="#C62828" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 로그 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="이벤트 로그"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingBottom="8dp"
+                    android:textColor="#333333" />
+
+                <ScrollView
+                    android:id="@+id/scrollViewLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:background="#F0F0F0"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:id="@+id/tvLog"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:fontFamily="monospace"
+                        android:textColor="#333333" />
+                </ScrollView>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</ScrollView>

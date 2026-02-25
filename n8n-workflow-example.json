@@ -1,0 +1,120 @@
+{
+  "name": "MMS 수신 처리",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mms-receiver",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "MMS 웹훅 수신",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event }}",
+              "value2": "mms_received"
+            }
+          ]
+        }
+      },
+      "id": "check-event",
+      "name": "MMS 이벤트 확인",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// MMS 데이터 파싱 및 가공\nconst data = $input.item.json;\n\nreturn {\n  json: {\n    // 기본 정보\n    mms_id: data.mms_id,\n    sender: data.sender,\n    timestamp: data.timestamp,\n    \n    // 텍스트 내용\n    text: data.text || '(텍스트 없음)',\n    \n    // 이미지 여부\n    has_images: data.has_images,\n    image_count: data.image_count,\n    \n    // 수신자\n    recipients: data.recipients?.join(', ') || '',\n    \n    // 제목\n    subject: data.subject || '',\n    \n    // 처리 시각\n    processed_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "parse-mms",
+      "name": "MMS 데이터 파싱",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=📱 *새 MMS 수신*\n발신: {{ $json.sender }}\n시각: {{ $json.timestamp }}\n내용: {{ $json.text }}\n이미지: {{ $json.image_count }}개"
+            }
+          ]
+        }
+      },
+      "id": "send-slack",
+      "name": "Slack 알림 (선택사항)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 200],
+      "notes": "Slack 웹훅 URL을 실제 값으로 변경하세요"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "MMS 기록",
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        }
+      },
+      "id": "save-sheet",
+      "name": "Google 시트 저장 (선택사항)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [900, 380],
+      "notes": "Google Sheets ID를 실제 값으로 변경하세요"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"received\": true }"
+      },
+      "id": "respond",
+      "name": "응답",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 400]
+    }
+  ],
+  "connections": {
+    "MMS 웹훅 수신": {
+      "main": [
+        [{ "node": "MMS 이벤트 확인", "type": "main", "index": 0 }]
+      ]
+    },
+    "MMS 이벤트 확인": {
+      "main": [
+        [
+          { "node": "MMS 데이터 파싱", "type": "main", "index": 0 },
+          { "node": "응답", "type": "main", "index": 0 }
+        ],
+        [{ "node": "응답", "type": "main", "index": 0 }]
+      ]
+    },
+    "MMS 데이터 파싱": {
+      "main": [
+        [
+          { "node": "Slack 알림 (선택사항)", "type": "main", "index": 0 },
+          { "node": "Google 시트 저장 (선택사항)", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
