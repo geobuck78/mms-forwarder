@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 편지 봉투 아이콘 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,30 L88,30 L88,78 L20,78 Z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M20,30 L54,58 L88,30 Z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M20,30 L20,78 L40,54 Z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M88,30 L88,78 L68,54 Z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M20,78 L40,54 L54,66 L68,54 L88,78 Z" />
+    <!-- n8n 화살표 -->
+    <path
+        android:fillColor="#03DAC5"
+        android:pathData="M46,85 L54,95 L62,85 L58,85 L58,75 L50,75 L50,85 Z" />
+</vector>
