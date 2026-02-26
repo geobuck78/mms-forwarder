@@ -5,7 +5,6 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-# 릴리즈 생성 권한 명시
 permissions:
   contents: write
 
@@ -24,20 +23,32 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: gradlew CRLF → LF 변환 및 실행 권한 부여
+      - name: 환경 확인 (디버그)
+        run: |
+          echo "=== Android SDK 경로 ==="
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          ls $ANDROID_HOME/platforms/ 2>/dev/null | tail -5 || echo "platforms 없음"
+          ls $ANDROID_HOME/build-tools/ 2>/dev/null | tail -3 || echo "build-tools 없음"
+          echo "=== Java 버전 ==="
+          java -version
+
+      - name: local.properties 생성 (SDK 경로 설정)
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: gradlew 실행 권한 부여
         run: |
           sed -i 's/\r//' gradlew
           chmod +x gradlew
 
       - name: APK 빌드
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tail -100
 
       - name: APK 이름 변경
         run: |
           mkdir -p release
           cp app/build/outputs/apk/debug/app-debug.apk release/MmsForwarder.apk
+          ls -lh release/
 
       - name: APK 아티팩트 업로드
         uses: actions/upload-artifact@v4
