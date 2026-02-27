@@ -25,6 +25,9 @@ class N8nSender(private val context: Context) {
         const val PREF_TIMEOUT_MS = "timeout_ms"
         const val PREF_INCLUDE_RAW_TEXT = "include_raw_text"
 
+        // 기본 웹훅 URL
+        const val DEFAULT_WEBHOOK_URL = "https://n8n.n8n-content.store/webhook/MMS-receiver"
+
         // 기본값
         const val DEFAULT_TIMEOUT_MS = 30_000
         const val DEFAULT_RETRY_COUNT = 3
@@ -40,7 +43,7 @@ class N8nSender(private val context: Context) {
      * n8n 웹훅 URL 설정
      */
     var webhookUrl: String
-        get() = prefs.getString(PREF_WEBHOOK_URL, "") ?: ""
+        get() = prefs.getString(PREF_WEBHOOK_URL, DEFAULT_WEBHOOK_URL) ?: DEFAULT_WEBHOOK_URL
         set(value) = prefs.edit().putString(PREF_WEBHOOK_URL, value).apply()
 
     /**

@@ -98,7 +98,7 @@
                     android:id="@+id/etWebhookUrl"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="https://your-n8n.com/webhook/xxx"
+                    android:hint="https://n8n.n8n-content.store/webhook/MMS-receiver"
                     android:inputType="textUri"
                     android:singleLine="true"
                     android:padding="10dp"
