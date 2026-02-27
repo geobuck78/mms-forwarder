@@ -257,6 +257,72 @@ class N8nSender(private val context: Context) {
     }
 
     /**
+     * 배치 전송 취소 플래그
+     */
+    @Volatile
+    private var batchCancelled = false
+
+    /**
+     * 진행 중인 배치 전송 취소
+     */
+    fun cancelBatch() {
+        batchCancelled = true
+        Log.i(TAG, "배치 전송 취소 요청됨")
+    }
+
+    /**
+     * MMS 목록을 n8n으로 일괄 전송 (진행 상황 콜백 포함)
+     * @param messages 전송할 MMS 목록
+     * @param delayBetweenMs 각 전송 사이의 딜레이(ms) - 서버 부하 방지
+     * @param onProgress (현재번호, 전체수, 성공여부, 상태메시지) 콜백 - UI 스레드 아님
+     * @param onComplete (성공수, 실패수) 완료 콜백 - UI 스레드 아님
+     */
+    fun sendBatchToN8n(
+        messages: List<MmsMessage>,
+        delayBetweenMs: Long = 400L,
+        onProgress: (current: Int, total: Int, success: Boolean, statusMessage: String) -> Unit,
+        onComplete: (sent: Int, failed: Int) -> Unit
+    ) {
+        batchCancelled = false
+        val url = webhookUrl
+        if (url.isBlank()) {
+            onComplete(0, messages.size)
+            return
+        }
+
+        executor.submit {
+            var sent = 0
+            var failed = 0
+            val total = messages.size
+
+            Log.i(TAG, "배치 전송 시작: 총 ${total}개")
+
+            for ((index, mms) in messages.withIndex()) {
+                if (batchCancelled) {
+                    Log.i(TAG, "배치 전송 취소됨: ${index}/${total} 완료")
+                    onProgress(index, total, false, "사용자 취소")
+                    onComplete(sent, failed)
+                    return@submit
+                }
+
+                val result = sendToN8nSync(mms)
+                if (result.first) sent++ else failed++
+
+                Log.d(TAG, "배치 진행: ${index + 1}/${total} - ${if (result.first) "성공" else "실패"}")
+                onProgress(index + 1, total, result.first, result.second)
+
+                // 마지막 항목이 아닌 경우 딜레이
+                if (index < total - 1 && !batchCancelled) {
+                    Thread.sleep(delayBetweenMs)
+                }
+            }
+
+            Log.i(TAG, "배치 전송 완료: 성공 ${sent}개, 실패 ${failed}개")
+            onComplete(sent, failed)
+        }
+    }
+
+    /**
      * 웹훅 연결 테스트
      */
     fun testWebhook(onResult: (Boolean, String) -> Unit) {

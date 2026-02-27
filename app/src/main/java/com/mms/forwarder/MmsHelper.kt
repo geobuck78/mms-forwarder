@@ -322,4 +322,94 @@ class MmsHelper(private val context: Context) {
     fun resetLastProcessedId() {
         lastProcessedId = -1L
     }
+
+    /**
+     * 전체 MMS 메시지 검색 (수신함 + 발신함)
+     * @param limit 가져올 최대 개수 (0 = 전체)
+     * @param onlyInbox true면 수신함만, false면 전체 (수신+발신)
+     * @param sinceTimestampMs 이 시간 이후의 MMS만 (0 = 제한 없음)
+     */
+    fun getAllMmsMessages(
+        limit: Int = 0,
+        onlyInbox: Boolean = false,
+        sinceTimestampMs: Long = 0L
+    ): List<MmsMessage> {
+        val messages = mutableListOf<MmsMessage>()
+        return try {
+            val selectionParts = mutableListOf<String>()
+            if (onlyInbox) selectionParts.add("msg_box = 1")
+            if (sinceTimestampMs > 0) selectionParts.add("date >= ${sinceTimestampMs / 1000}")
+            val selection = if (selectionParts.isEmpty()) null else selectionParts.joinToString(" AND ")
+
+            val sortOrder = if (limit > 0) "date DESC LIMIT $limit" else "date DESC"
+
+            val cursor = context.contentResolver.query(
+                MMS_URI,
+                arrayOf("_id", "thread_id", "date", "sub", "msg_box"),
+                selection,
+                null,
+                sortOrder
+            ) ?: return messages
+
+            cursor.use {
+                while (it.moveToNext()) {
+                    val id = it.getLong(it.getColumnIndexOrThrow("_id"))
+                    val threadId = it.getLong(it.getColumnIndexOrThrow("thread_id"))
+                    val dateSeconds = it.getLong(it.getColumnIndexOrThrow("date"))
+                    val subject = it.getString(it.getColumnIndex("sub"))
+
+                    val timestamp = dateSeconds * 1000L
+                    val dateFormatted = SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss", Locale.getDefault()
+                    ).apply {
+                        timeZone = TimeZone.getDefault()
+                    }.format(Date(timestamp))
+
+                    val sender = getMmsSender(id)
+                    val recipients = getMmsRecipients(id)
+                    val (textParts, imageParts) = getMmsParts(id)
+
+                    messages.add(
+                        MmsMessage(
+                            id = id,
+                            threadId = threadId,
+                            sender = sender,
+                            recipients = recipients,
+                            subject = subject,
+                            textParts = textParts,
+                            imageParts = imageParts,
+                            timestamp = timestamp,
+                            timestampFormatted = dateFormatted
+                        )
+                    )
+                }
+            }
+            Log.i(TAG, "전체 MMS 검색 완료: ${messages.size}개")
+            messages
+        } catch (e: Exception) {
+            Log.e(TAG, "전체 MMS 읽기 오류: ${e.message}")
+            messages
+        }
+    }
+
+    /**
+     * 저장된 MMS 총 개수 조회
+     * @param onlyInbox true면 수신함만 카운트
+     */
+    fun getMmsCount(onlyInbox: Boolean = false): Int {
+        return try {
+            val selection = if (onlyInbox) "msg_box = 1" else null
+            val cursor = context.contentResolver.query(
+                MMS_URI,
+                arrayOf("_id"),
+                selection,
+                null,
+                null
+            ) ?: return 0
+            cursor.use { it.count }
+        } catch (e: Exception) {
+            Log.e(TAG, "MMS 개수 조회 오류: ${e.message}")
+            0
+        }
+    }
 }

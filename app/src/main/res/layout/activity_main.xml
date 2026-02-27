@@ -223,6 +223,119 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- 전체 MMS 검색 & 전송 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="전체 MMS 검색 &amp; 전송"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingBottom="2dp"
+                    android:textColor="#333333" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="저장된 MMS를 n8n으로 일괄 전송합니다"
+                    android:textSize="12sp"
+                    android:textColor="#888888"
+                    android:paddingBottom="12dp" />
+
+                <!-- 전송 범위 선택 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="전송 범위: "
+                        android:textSize="14sp"
+                        android:textColor="#444444" />
+
+                    <Spinner
+                        android:id="@+id/spinnerMmsLimit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="4dp" />
+                </LinearLayout>
+
+                <!-- MMS 총 개수 표시 -->
+                <TextView
+                    android:id="@+id/tvMmsCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="#777777"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- 진행 상황 프로그레스바 -->
+                <ProgressBar
+                    android:id="@+id/progressBarBatch"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="0"
+                    android:visibility="gone"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- 진행 상태 텍스트 -->
+                <TextView
+                    android:id="@+id/tvBatchStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="#555555"
+                    android:fontFamily="monospace"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 버튼들 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnSendAllMms"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="검색 &amp; 전송"
+                        android:backgroundTint="#7B1FA2" />
+
+                    <Button
+                        android:id="@+id/btnCancelBatch"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="취소"
+                        android:backgroundTint="#757575"
+                        android:enabled="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- 로그 카드 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
