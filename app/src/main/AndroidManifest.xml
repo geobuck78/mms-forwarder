@@ -7,10 +7,9 @@
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.WRITE_SMS" />
 
     <!-- WAP Push (MMS 알림) 수신 권한 -->
-    <uses-permission android:name="android.permission.BROADCAST_WAP_PUSH" />
+    <!-- BROADCAST_WAP_PUSH 제거: 시스템 서명 권한이라 일반 앱 설치 거부됨 -->
     <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
 
     <!-- 인터넷 (n8n 웹훅 전송) -->
@@ -19,6 +18,7 @@
 
     <!-- 포그라운드 서비스 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- 부팅 시 자동 시작 -->
@@ -26,7 +26,6 @@
 
     <!-- 백그라운드 실행 유지 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
@@ -48,14 +47,11 @@
         </activity>
 
         <!-- MMS 수신 BroadcastReceiver (WAP Push) -->
+        <!-- WAP_PUSH_DELIVER는 기본 SMS 앱 전용 → WAP_PUSH_RECEIVED 사용 -->
+        <!-- android:permission 속성 제거: BROADCAST_WAP_PUSH 없이도 시스템 브로드캐스트 수신 가능 -->
         <receiver
             android:name=".MmsReceiver"
-            android:exported="true"
-            android:permission="android.permission.BROADCAST_WAP_PUSH">
-            <intent-filter android:priority="999">
-                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
-                <data android:mimeType="application/vnd.wap.mms-message" />
-            </intent-filter>
+            android:exported="true">
             <intent-filter android:priority="999">
                 <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
                 <data android:mimeType="application/vnd.wap.mms-message" />

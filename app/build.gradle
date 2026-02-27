@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.mms.forwarder"
-        minSdk 26           // Android 8.0+ (Oreo) - 포그라운드 서비스 지원
+        minSdk 21           // Android 5.0+ (Lollipop) - 더 넓은 기기 지원
         targetSdk 34
         versionCode 1
         versionName "1.0.0"
