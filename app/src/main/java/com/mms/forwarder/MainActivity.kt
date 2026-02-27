@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvMmsCount: TextView
     private lateinit var progressBarBatch: ProgressBar
     private lateinit var tvBatchStatus: TextView
+    private lateinit var checkBoxDeleteAfterSend: android.widget.CheckBox
     private lateinit var btnSendAllMms: Button
     private lateinit var btnCancelBatch: Button
 
@@ -133,12 +134,13 @@ class MainActivity : AppCompatActivity() {
         tvPermissionStatus = findViewById(R.id.tvPermissionStatus)
 
         // 배치 전송 views
-        spinnerMmsLimit  = findViewById(R.id.spinnerMmsLimit)
-        tvMmsCount       = findViewById(R.id.tvMmsCount)
-        progressBarBatch = findViewById(R.id.progressBarBatch)
-        tvBatchStatus    = findViewById(R.id.tvBatchStatus)
-        btnSendAllMms    = findViewById(R.id.btnSendAllMms)
-        btnCancelBatch   = findViewById(R.id.btnCancelBatch)
+        spinnerMmsLimit        = findViewById(R.id.spinnerMmsLimit)
+        tvMmsCount             = findViewById(R.id.tvMmsCount)
+        progressBarBatch       = findViewById(R.id.progressBarBatch)
+        tvBatchStatus          = findViewById(R.id.tvBatchStatus)
+        checkBoxDeleteAfterSend = findViewById(R.id.checkBoxDeleteAfterSend)
+        btnSendAllMms          = findViewById(R.id.btnSendAllMms)
+        btnCancelBatch         = findViewById(R.id.btnCancelBatch)
 
         // 기존 버튼 이벤트
         btnSaveSettings.setOnClickListener { saveSettings() }
@@ -193,6 +195,25 @@ class MainActivity : AppCompatActivity() {
         val limit = LIMIT_OPTIONS[selectedPos].second
         val limitLabel = LIMIT_OPTIONS[selectedPos].first
 
+        // 삭제 옵션 UI 스레드에서 미리 읽기 (백그라운드에서 UI 접근 금지)
+        val shouldDelete = checkBoxDeleteAfterSend.isChecked
+
+        // 삭제 옵션 켜져 있으면 최종 확인 다이얼로그
+        if (shouldDelete) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("⚠ MMS 삭제 확인")
+                .setMessage("전송 완료된 MMS를 기기에서 삭제합니다.\n삭제된 메시지는 복구할 수 없습니다.\n\n계속하시겠습니까?")
+                .setPositiveButton("삭제하며 전송") { _, _ ->
+                    executeBatchSend(url, limit, limitLabel, shouldDelete = true)
+                }
+                .setNegativeButton("취소", null)
+                .show()
+        } else {
+            executeBatchSend(url, limit, limitLabel, shouldDelete = false)
+        }
+    }
+
+    private fun executeBatchSend(url: String, limit: Int, limitLabel: String, shouldDelete: Boolean) {
         // 임시 설정 반영
         n8nSender.webhookUrl = url
         n8nSender.webhookSecret = etWebhookSecret.text.toString().trim()
@@ -200,7 +221,8 @@ class MainActivity : AppCompatActivity() {
         // UI → 전송 중 상태
         setBatchUiRunning(true)
         progressBarBatch.progress = 0
-        addLog("🔍 MMS 검색 시작 ($limitLabel)...")
+        val deleteLabel = if (shouldDelete) " + 삭제" else ""
+        addLog("🔍 MMS 검색 시작 ($limitLabel$deleteLabel)...")
         tvBatchStatus.text = "MMS 목록 불러오는 중..."
 
         // 백그라운드에서 MMS 목록 조회 후 전송
@@ -223,19 +245,34 @@ class MainActivity : AppCompatActivity() {
                 progressBarBatch.max = foundCount
             }
 
+            var deletedCount = 0
+            var deleteFailedCount = 0
+
             // 배치 전송
             n8nSender.sendBatchToN8n(
                 messages = messages,
                 delayBetweenMs = 400L,
                 onProgress = { current, total, success, statusMsg ->
-                    val pct = (current * 100) / total
                     val icon = if (success) "✅" else "❌"
                     val msg = messages[current - 1]
                     val preview = msg.textParts.firstOrNull()?.take(30) ?: "(텍스트 없음)"
 
+                    // 전송 성공 + 삭제 옵션 켜져 있으면 삭제 (백그라운드 스레드에서 실행)
+                    var deleteResult = ""
+                    if (success && shouldDelete) {
+                        val deleted = mmsHelper.deleteMms(msg.id)
+                        if (deleted) {
+                            deletedCount++
+                            deleteResult = " 🗑삭제됨"
+                        } else {
+                            deleteFailedCount++
+                            deleteResult = " ⚠삭제실패"
+                        }
+                    }
+
                     runOnUiThread {
                         progressBarBatch.progress = current
-                        tvBatchStatus.text = "$icon $current / $total  |  ${msg.sender}  \"$preview\""
+                        tvBatchStatus.text = "$icon $current / $total  |  ${msg.sender}  \"$preview\"$deleteResult"
                         if (!success) {
                             addLog("❌ [$current/$total] ${msg.sender} 전송 실패: $statusMsg")
                         }
@@ -244,14 +281,26 @@ class MainActivity : AppCompatActivity() {
                 onComplete = { sent, failed ->
                     runOnUiThread {
                         setBatchUiRunning(false)
-                        val summary = "✅ 배치 완료: ${sent}개 성공, ${failed}개 실패 / 총 ${sent + failed}개"
+                        val deleteInfo = if (shouldDelete)
+                            " | 삭제 성공 ${deletedCount}개${if (deleteFailedCount > 0) ", 실패 ${deleteFailedCount}개" else ""}"
+                        else ""
+                        val summary = "✅ 배치 완료: 전송 ${sent}개 성공, ${failed}개 실패$deleteInfo"
                         tvBatchStatus.text = summary
                         addLog("📦 $summary")
+
+                        // 삭제 실패 시 안내
+                        if (shouldDelete && deleteFailedCount > 0) {
+                            addLog("⚠️ MMS 삭제 실패 ${deleteFailedCount}개: 기본 SMS 앱으로 설정하면 삭제 가능합니다.")
+                        }
+
                         Toast.makeText(
                             this,
                             "전송 완료: 성공 ${sent}개, 실패 ${failed}개",
                             Toast.LENGTH_LONG
                         ).show()
+
+                        // 삭제 후 MMS 개수 갱신
+                        if (shouldDelete && deletedCount > 0) refreshMmsCount()
                     }
                 }
             )
@@ -260,11 +309,11 @@ class MainActivity : AppCompatActivity() {
 
     // ── 배치 UI 상태 토글 ───────────────────────────────────
     private fun setBatchUiRunning(running: Boolean) {
-        btnSendAllMms.isEnabled   = !running
-        btnCancelBatch.isEnabled  = running
-        spinnerMmsLimit.isEnabled = !running
-        progressBarBatch.visibility = if (running) View.VISIBLE else View.VISIBLE // 항상 표시
-        if (!running) progressBarBatch.visibility = View.GONE
+        btnSendAllMms.isEnabled          = !running
+        btnCancelBatch.isEnabled         = running
+        spinnerMmsLimit.isEnabled        = !running
+        checkBoxDeleteAfterSend.isEnabled = !running
+        progressBarBatch.visibility      = if (running) View.VISIBLE else View.GONE
     }
 
     // ── 기존 기능들 ────────────────────────────────────────

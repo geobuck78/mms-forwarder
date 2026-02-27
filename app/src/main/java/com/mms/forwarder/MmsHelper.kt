@@ -393,6 +393,31 @@ class MmsHelper(private val context: Context) {
     }
 
     /**
+     * MMS 메시지 삭제
+     * ⚠ Android 4.4+ 에서는 기본 SMS 앱으로 설정되어 있어야 삭제 가능
+     * @return true=삭제 성공, false=실패(권한 없음 또는 기본 SMS 앱 아님)
+     */
+    fun deleteMms(mmsId: Long): Boolean {
+        return try {
+            val uri = Uri.parse("content://mms/$mmsId")
+            val deleted = context.contentResolver.delete(uri, null, null)
+            if (deleted > 0) {
+                Log.i(TAG, "MMS 삭제 성공: ID=$mmsId")
+                true
+            } else {
+                Log.w(TAG, "MMS 삭제 실패 (0건 삭제): ID=$mmsId")
+                false
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "MMS 삭제 권한 없음 (기본 SMS 앱 설정 필요): ${e.message}")
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "MMS 삭제 오류: ID=$mmsId, ${e.message}")
+            false
+        }
+    }
+
+    /**
      * 저장된 MMS 총 개수 조회
      * @param onlyInbox true면 수신함만 카운트
      */

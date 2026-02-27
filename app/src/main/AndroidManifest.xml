@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- MMS 삭제 기능용 (기본 SMS 앱으로 설정 시 동작) -->
+    <uses-permission android:name="android.permission.WRITE_SMS" />
 
     <!-- WAP Push (MMS 알림) 수신 권한 -->
     <!-- BROADCAST_WAP_PUSH 제거: 시스템 서명 권한이라 일반 앱 설치 거부됨 -->
